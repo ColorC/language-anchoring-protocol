@@ -2,7 +2,7 @@
 
 > **状态**: Draft / V0.2
 > **日期**: 2026-03-15
-> **作者**: zhouhaowen
+> **作者**: LAP Protocol Authors
 > **项目**: OmniFactory
 > **变更**: 在 V0.1 基础上新增语义标签系统 (固有属性)、三层信息机制、未检验输入与入口守卫、confidence 三态语义、必要条件验证方法论、Format 类型精度
 

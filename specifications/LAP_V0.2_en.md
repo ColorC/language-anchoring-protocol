@@ -3,7 +3,7 @@
 
 > **Status**: Draft / V0.2
 > **Date**: 2026-03-15
-> **Author**: zhouhaowen
+> **Author**: LAP Protocol Authors
 > **Project**: OmniFactory
 > **Changes**: Added Semantic Tag System (inherent properties), Three-Layer Information Mechanism, Unverified Inputs & Entry Guards, Confidence three-state semantics, Necessary Condition Verification Methodology, and Format Type Precision on top of V0.1.
 

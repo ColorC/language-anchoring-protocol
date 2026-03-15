@@ -2,7 +2,7 @@
 
 > **状态**: Draft / V0.1
 > **日期**: 2026-03-14
-> **作者**: zhouhaowen
+> **作者**: LAP Protocol Authors
 > **项目**: OmniFactory
 
 ---
