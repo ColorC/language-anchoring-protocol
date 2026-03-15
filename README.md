@@ -25,6 +25,26 @@ Anchor = (Format_In, Validator → Verdict → Route) → Format_Out
 *   **Universality:** A requirement is a requirement, regardless of where it comes from (a chat, a Jira ticket, a GitHub issue).
 *   **Neural Network Compatibility:** With atomic operations, routing capabilities, and high human-readability, LAP operates on *semantics* rather than mathematical computation or weights. 
 
+### 1.2 Familiar Concepts, Reimagined
+
+To demonstrate the elegance of LAP, consider how it reimagines the familiar **ReAct/CodeAct loop (e.g., the core logic of OpenHands)**.
+
+In traditional hardcoded implementations, this is often a complex `while` loop cluttered with `if/else` statements handling LLM parsing errors or tool execution failures. 
+
+Under the LAP Event Bus architecture, it is simply three extraordinarily clean semantic nodes:
+
+1.  **Context (Transformer Node):**
+    *   **Semantic Contract:** `tool-observation` → `agent-state`
+    *   **Logic:** Transforms raw tool outputs into a context state the LLM can process.
+2.  **LLM (Soft Anchor):**
+    *   **Semantic Contract:** `agent-state` → `agent-action`
+    *   **Routing:** The LLM yields a Verdict. If it decides the task is complete (PASS), the pipeline Emits. If it issues a tool call (FAILs soft validation), it routes to the next Hard Anchor.
+3.  **Tool (Hard Anchor):**
+    *   **Semantic Contract:** `agent-action` → `tool-observation`
+    *   **Native Traceability & Self-Healing:** Whether the tool executes successfully (PASS) or fails with an error stack trace (FAIL with Diagnosis), LAP routes the observation back to the `Context` node. The LLM natively reads the Diagnosis in the next tick to self-heal.
+
+This paradigm **completely decouples "business implementation" from "semantic contracts."** It is infinitely extensible. Because it runs purely on an Event Bus, every Verdict is natively tracked, creating the perfect substrate for model fine-tuning and architectural self-evolution (the Evolution Engine). See `examples/openhands_codeact_loop.py` for the code specification.
+
 ## 2. The Vision: Event Bus & Semantic Contracts
 
 Current explicit graph mappings are often too rigid for truly autonomous agents. I believe the best architectural form for this is an **Event Bus**. 

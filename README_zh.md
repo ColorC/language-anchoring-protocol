@@ -25,6 +25,26 @@ Anchor = (Format_In, Validator → Verdict → Route) → Format_Out
 *   **极致的通用性：** 甭管哪来的需求，只要是“需求（Requirement）”就可以进入处理管线。
 *   **神经网络的契合性：** 它具备原子化操作和路由能力，并且具有极高的可读性。它基于“语义”而非纯粹的计算或权重运行。
 
+### 1.2 用 LAP 重新表达熟悉的概念
+
+为了展示 LAP 的优雅性，我们来看看如何用 LAP 重新表达你最熟悉的 **ReAct/CodeAct 循环（如 OpenHands 的核心逻辑）**。
+
+在传统的硬编码实现中，这通常是一个复杂的 `while` 循环，里面夹杂着各种 `if/else` 来处理 LLM 解析错误或工具执行错误。
+
+而在 LAP 事件总线体系下，它只是三个极其干净的语义处理节点：
+
+1.  **Context (Transformer 节点):**
+    *   **语义契约：** `tool-observation` → `agent-state`
+    *   **逻辑：** 无论什么工具输出，到达这里都必须被转换为 LLM 能理解的上下文状态。
+2.  **LLM (Soft Anchor 软锚定):**
+    *   **语义契约：** `agent-state` → `agent-action`
+    *   **路由：** LLM 输出 Verdict。如果它决定完成任务（PASS），则将文本 Emit 出管线；如果它决定调用工具（FAIL 软校验），则路由给下一个硬锚点。
+3.  **Tool (Hard Anchor 硬锚定):**
+    *   **语义契约：** `agent-action` → `tool-observation`
+    *   **天然可追踪与自愈：** 无论工具执行成功（PASS）还是失败遇到了 Error 堆栈（FAIL 附带 Diagnosis 诊断信息），LAP 都会将其路由回 `Context` 节点。LLM 会在下一轮中自动看到诊断信息并尝试自愈。
+
+这种表达方式**将“业务实现”与“语义契约”完全解耦**。它极其通用、易于扩展，并且由于全程在 Event Bus 上流转，任何一个节点的 Verdict 都在天然且精细地被记录，为未来的模型微调和自我进化（Evolution Engine）提供了完美的温床。详情可查看 `examples/openhands_codeact_loop.py`。
+
 ## 2. 愿景：事件总线 (Event Bus) 与语义契约
 
 我认为目前静态的图连线并不适合真正的自治 Agent，目前最好的系统架构形态是**事件总线（Event Bus）**。
