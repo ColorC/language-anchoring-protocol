@@ -5,30 +5,44 @@
 
 ---
 
-## 1. 核心 Format 继承树
+## 1. 核心 Format 分类与流转
 
-所有流淌在 LAP 事件总线上的数据，本质上都是“需求（Requirement）”在不同状态下的变体。
+在 LAP 中，我们严格区分“结构继承 (Is-A)”与“语义衍生 (Derives-From)”。所有在事件总线上流淌的数据都属于某个基础大类，并且通过 Transformer 跨大类流转。
+
+### 1.1 结构继承树 (Is-A)
 
 ```text
-Requirement (根类型)
-├── Spec                (结构化意图 / 规格说明)
-│   ├── Code            (可执行意图 / 源代码)
-│   │   ├── Binary      (编译产物)
-│   │   └── CodePatch   (代码补丁/Diff)
-│   ├── TestPlan        (可验证意图 / 测试策略)
-│   │   ├── TestResult  (测试执行报告)
-│   │   └── TestVerdict (外部硬锚定测试结果/Ground Truth)
-│   ├── Doc             (人类可读意图 / 文档)
-│   │   └── APIDoc      (机器+人类可读 / 接口文档)
-│   └── TaskSpec        (带有验证标准的任务规格)
-├── Ticket              (工单形态意图 / Issue)
-├── ChatMessage         (对话形态意图 / 用户输入)
-├── CISignal            (持续集成信号)
-├── AgentRunState       (Agent 运行时状态/上下文)
-├── AgentAction         (Agent 单步决策输出/Tool Calls)
-├── ToolObservation     (工具执行观察结果)
-└── ResidualCase        (残差案例 / 导致进化触发的失败案例)
+1. Requirement (意图基类)
+   ├── FeatureRequirement (功能需求)
+   ├── BugfixRequirement  (修复需求)
+   ├── ChatMessage        (对话形态输入)
+   └── Ticket             (工单形态意图)
+
+2. Spec (结构化规格基类)
+   ├── TaskSpec           (带验证标准的任务规格)
+   ├── Doc                (人类可读文档)
+   └── APIDoc             (机器可读接口文档)
+
+3. Code (可执行逻辑基类)
+   ├── CodePatch          (代码补丁/Diff)
+   └── Binary             (编译产物)
+
+4. Verification (验证与报告基类)
+   ├── TestPlan           (测试策略)
+   ├── TestResult         (测试执行报告)
+   ├── TestVerdict        (外部硬锚定测试结果/Ground Truth)
+   └── CISignal           (持续集成信号)
+
+5. AgentRuntime (运行时状态基类)
+   ├── AgentState         (上下文)
+   ├── AgentAction        (决策输出)
+   └── ToolObservation    (工具反馈)
 ```
+
+### 1.2 语义衍生路径 (Derives-From)
+
+管线通过 Transformer 定义状态转移（伴随潜在的语义丢失，需要通过后续的 `semantic.faithful` 标签来验证）：
+`Requirement => Spec => Code => TestResult`
 
 ## 2. 基础 Format 定义详解
 
@@ -61,7 +75,11 @@ Requirement (根类型)
 *   `validation.syntax`: 通过了初步的语法校验，但尚未进行逻辑校验。
 *   `validation.security`: 通过了代码安全扫描。
 
-### 3.3 进化与自我修复 (Evolution Engine)
+### 3.3 语义保真度 (Semantic Fidelity)
+
+*   `semantic.faithful`: **语义无损/忠实**。表示该数据（如一段代码）已经被特定的 Anchor 验证过，它完美且忠实地实现了其上游来源（如一段需求）的意图。没有夹带私货，也没有遗漏。这是防御 Agent 产生幻觉或“无论输入什么都输出同样代码”的最重要标签。
+
+### 3.4 进化与自我修复 (Evolution Engine)
 *   `evolution.residual`: 标记为“残差”，即管线内自洽但被物理世界打脸的数据，需要触发系统进化。
 *   `evolution.attribution`: 语义归因结果，标明是由于过度生成(MORE)、缺失(LESS)还是错误(WRONG)导致的问题。
 

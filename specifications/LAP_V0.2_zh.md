@@ -148,29 +148,28 @@ Requirement → Spec → Code → TestResult → Deployment
     "意图"     "规格"  "实现"  "验证报告"   "运行态"
 ```
 
-**它们之间存在继承关系。** Code 不等于 Requirement，但 Code 继承了 Requirement 的语义（Code 是 Requirement 的实现形态）。这意味着——
+**它们之间存在衍生与转移关系。** Code 不等于 Requirement，但 Code 是基于 Requirement 衍生出来的实现。在每次状态转移中（比如从需求到代码），都伴随着**语义的坍缩与潜在的丢失**。这意味着——
 
-### 2.5 发现五：这是一个类型系统
+### 2.5 发现五：这是一个类型系统与流转图
 
-当 Format 是类型、Anchor 是函数、继承关系存在时，我们得到的不是一个协议——而是一个**类型系统**：
+当 Format 是类型、Anchor 是函数时，我们得到的不是一个简单的协议——而是一个**带有明确转换规则的类型系统**：
 
 ```
-Format          = 类型
+Format          = 语义类型
 Anchor          = 带类型签名的函数 (Format_in → Format_out)
-Transformer     = 类型转换器 (LLM 驱动的隐式/显式转换)
+Transformer     = 类型转换器 (LLM 驱动的隐式/显式转换，伴随语义损失风险)
 Pipeline        = 程序 (类型安全的函数组合)
 类型检查        = 编译期错误检测
 ```
 
-三种连接方式：
+**深刻的纠正：区分“继承(Inheritance)”与“衍生(Derivation)”**
 
-| 连接情况 | 类比 | 行为 |
-|---------|------|------|
-| 输出类型 = 输入类型 | 直接赋值 | 直连（短路） |
-| 输出类型 ⊂ 输入类型 (继承) | 需要类型转换 | 插入 Transformer |
-| 输出类型 ⊥ 输入类型 (无关) | 类型错误 | 编译报错，管线不合法 |
+在最初的构想中，我们容易混淆“继承”与“流转”。在 LAP 的严格定义中：
 
-**TypeScript 给 JavaScript 的无类型混沌加上了类型系统。LAP 给 LLM 管线的无类型混沌加上了语义类型系统。**
+*   **继承 (Is-A, 结构继承)**：表达包含关系。例如：`PythonCode` 继承自 `Code`；`ArtRequirement` 继承自 `Requirement`。子类完全包含父类的语义。
+*   **衍生 (Derives-From, 语义转移)**：表达流水线中的因果关系。例如：`Code` 衍生自 `Requirement`。`Code` **并不是** `Requirement`，它丢失了需求中的“Why（为什么做）”，只保留了“How（怎么做）”。
+
+**TypeScript 给 JavaScript 的无类型混沌加上了类型系统。LAP 给 LLM 管线的无类型混沌加上了基于继承和衍生规则的语义流转网络。**
 
 ### 2.6 发现六：语义类型需要语义维度 *(V0.2 新增)*
 
@@ -273,24 +272,23 @@ format:
 
 `required_tags` 是**机器可检查的**——PipelineChecker 可以在编译期验证上游是否有 validator 授予了这些标签。`semantic_preconditions` 是**人类可读的**——指导 validator 实现者知道该检查什么。
 
-#### Format 继承树
+#### Format 继承树 (严格 Is-A 关系)
 
-```
+```text
 Requirement (根类型: "一个有状态的意图")
-├── Spec        "结构化的意图描述"
-│   ├── Code        "可执行的意图实现"
-│   │   ├── Binary      "可运行的编译产物"
-│   │   └── Script      "可解释执行的脚本"
-│   ├── TestPlan    "可验证的测试策略"
-│   │   └── TestResult  "测试执行报告"
-│   └── Doc         "人类可读的描述"
-│       └── APIDoc      "机器+人类可读的接口描述"
-├── Ticket      "工单形态的意图"
-├── ChatMessage "对话形态的意图"
-└── CISignal    "持续集成信号 (构建/部署触发)"
+├── FeatureRequirement   "功能性需求"
+└── BugfixRequirement    "修复性需求"
+
+Code (源代码)
+├── PythonCode           "Python 源代码"
+└── BashScript           "Bash 脚本"
+
+Document (文档)
+├── Spec                 "结构化的意图描述 / 规格"
+└── APIDoc               "机器+人类可读的接口描述"
 ```
 
-**所有这些 Format 本质上都是同一个东西——需求——的不同投影。**
+而流转关系则由 Pipeline 中的 Transformer 来定义：`Requirement => Spec => Code`。
 
 ### 3.2 Verdict — 判定结果 *(V0.2 增强)*
 
@@ -454,14 +452,13 @@ COMPATIBLE(A, B) =
 
 ### 4.2 子类型关系 (<:)
 
-子类型关系由 Format 的继承链决定：
+子类型关系由 Format 的继承链决定，必须遵循严格的语义包含（Is-A）：
 
 ```
-Code <: Spec <: Requirement
+PythonCode <: Code
 意味着:
-  需要 Requirement 的地方可以传入 Code（Code 是 Requirement 的一种）
-  需要 Spec 的地方可以传入 Code（Code 是 Spec 的一种）
-  需要 Code 的地方不能传入 Spec（Spec 不一定是 Code）
+  需要 Code 的地方可以传入 PythonCode（PythonCode 是 Code 的一种）
+  需要 PythonCode 的地方不能传入普通的 Code
 ```
 
 这是**协变（covariant）**子类型：子类型可以替代父类型，反之不行。
@@ -486,18 +483,23 @@ FULLY_COMPATIBLE(source, target) =
 
 标签兼容性是**路径敏感的**——它取决于数据到达某节点时累积了哪些 `granted_tags`，而非只看单条边。
 
-### 4.4 Transformer 作为类型转换
+### 4.4 Transformer 作为语义转换（伴随丢失）
 
-当类型不直接兼容但语义上可转换时，插入 Transformer：
+当类型在流水线中发生实质性的状态转移（如衍生）时，必须插入 Transformer：
 
 ```
-逆向转换 (父→子):
-  Requirement → Code  需要 Transformer (本质上就是"编程")
-  Spec → TestPlan     需要 Transformer (本质上就是"测试设计")
-
-这些转换不是免费的——它们是软锚定，有失败的可能。
-Transformer 本身就是一个 Anchor：有输入格式、有判定、有路由。
+逻辑转换流 (基于依赖):
+  Requirement → Spec      (需求分析)
+  Spec → Code             (编程实现)
+  Code → TestResult       (测试执行)
 ```
+
+**关键洞察：Transformer 操作本质上是有损的。** 
+从 `Requirement` 到 `Code`，需求中宏观的业务背景被丢弃，坍缩为具体的代码逻辑。
+因此，Transformer 是一次软锚定，它不仅需要格式转换，还需要在后续的硬锚点中引入“**语义忠实度 (Fidelity / Faithfulness)**”的校验——检查输出是否忠实地反映了输入的意图。
+
+**这引出了一个极其重要的标签：`semantic.lossless` 或 `semantic.faithful`**。
+在 LAP 的高级实践中，如果一个 Agent 声称自己输出了与输入要求完全匹配的 `Code`，它必须通过一个专门比对“原需求”与“新代码”的 Anchor，才能被授予 `semantic.faithful` 标签。没有这个标签，产物在语义上就是存疑的（即你提到的“无论什么需求都输出同一段代码”的欺骗行为）。
 
 ### 4.5 类型推断
 

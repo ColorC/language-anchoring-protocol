@@ -5,30 +5,44 @@
 
 ---
 
-## 1. Core Format Inheritance Tree
+## 1. Core Format Classification and Flow
 
-All data flowing across the LAP Event Bus are fundamentally variations of a "Requirement" in different states.
+In LAP, we strictly distinguish between "Structural Inheritance (Is-A)" and "Semantic Derivation (Derives-From)". All data flowing across the Event Bus belongs to a base class and transitions across classes via Transformers.
+
+### 1.1 Structural Inheritance Tree (Is-A)
 
 ```text
-Requirement (Root Type)
-├── Spec                (Structured Intent)
-│   ├── Code            (Executable Intent / Source Code)
-│   │   ├── Binary      (Compiled Artifact)
-│   │   └── CodePatch   (Code Patch / Diff)
-│   ├── TestPlan        (Verifiable Intent / Test Strategy)
-│   │   ├── TestResult  (Test Execution Report)
-│   │   └── TestVerdict (External Hard-Anchored Result / Ground Truth)
-│   ├── Doc             (Human-readable Intent)
-│   │   └── APIDoc      (Machine+Human-readable Interface)
-│   └── TaskSpec        (Task Specification with Validation Criteria)
-├── Ticket              (Ticket-based Intent / Jira / GitHub Issue)
-├── ChatMessage         (Conversation-based Intent / User Input)
-├── CISignal            (Continuous Integration Signal)
-├── AgentRunState       (Agent Runtime State / Context)
-├── AgentAction         (Agent Single-step Decision / Tool Calls)
-├── ToolObservation     (Observation from Tool Execution)
-└── ResidualCase        (Residual Case / Failure case triggering evolution)
+1. Requirement (Base Intent)
+   ├── FeatureRequirement (Feature addition)
+   ├── BugfixRequirement  (Bug fix)
+   ├── ChatMessage        (Conversational intent)
+   └── Ticket             (Issue tracker intent)
+
+2. Spec (Structured Specification)
+   ├── TaskSpec           (Task spec with validation)
+   ├── Doc                (Human-readable document)
+   └── APIDoc             (Machine-readable API spec)
+
+3. Code (Executable Logic)
+   ├── CodePatch          (Code patch / Diff)
+   └── Binary             (Compiled artifact)
+
+4. Verification (Validation & Reports)
+   ├── TestPlan           (Testing strategy)
+   ├── TestResult         (Test execution report)
+   ├── TestVerdict        (External hard-anchored Ground Truth)
+   └── CISignal           (CI/CD signal)
+
+5. AgentRuntime (Agent State Base)
+   ├── AgentState         (Context / History)
+   ├── AgentAction        (Decision / Tool Call)
+   └── ToolObservation    (Tool feedback)
 ```
+
+### 1.2 Semantic Derivation Path (Derives-From)
+
+Pipelines define state transitions via Transformers (which entail potential semantic loss, requiring verification via the `semantic.faithful` tag later):
+`Requirement => Spec => Code => TestResult`
 
 ## 2. Fundamental Format Definitions
 
@@ -61,7 +75,11 @@ In LAP V0.2, Tags are used to define unstructured semantic facets that cross-cut
 *   `validation.syntax`: Passed initial syntax validation, but not yet logically validated.
 *   `validation.security`: Passed code security scanning.
 
-### 3.3 Evolution & Self-Healing (Evolution Engine)
+### 3.3 Semantic Fidelity
+
+*   `semantic.faithful`: **Semantic Lossless / Faithful**. Indicates that this data (e.g., Code) has been verified by an Anchor to perfectly and faithfully implement the intent of its upstream source (e.g., a Requirement). No unprompted additions, no omissions. This is the ultimate tag to defend against LLM hallucinations or "outputting the same generic code regardless of input."
+
+### 3.4 Evolution & Self-Healing (Evolution Engine)
 *   `evolution.residual`: Marked as a "Residual"—data that is self-consistent within the pipeline but rejected by the physical world, triggering system evolution.
 *   `evolution.attribution`: Semantic attribution result, indicating whether a failure was due to over-generation (MORE), omission (LESS), or logical error (WRONG).
 
