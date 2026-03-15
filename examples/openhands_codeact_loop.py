@@ -10,10 +10,10 @@ implementation (Routers), the entire agent loop becomes type-safe,
 infinitely extensible, and natively observable.
 """
 
-from omnifactory.protocol.anchor import (
+from lap.protocol.anchor import (
     AnchorSpec, Route, RouteAction, TransformerSpec, TransformMethod, ValidatorKind, ValidatorSpec, VerdictKind
 )
-from omnifactory.protocol.pipeline import NodeKind, PipelineEdge, PipelineNode, PipelineSpec
+from lap.protocol.pipeline import NodeKind, PipelineEdge, PipelineNode, PipelineSpec
 
 def build_codeact_pipeline() -> PipelineSpec:
     """

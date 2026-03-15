@@ -91,12 +91,13 @@ All Soft Anchors (LLMs) are merely probabilistic attempts striving to collapse i
 
 I am eager to discuss these concepts further. If you believe "semanticizing" traditional system engineering problems is a viable path, or if you spot logical flaws in this architecture, please feel free to open an issue or start a discussion.
 
-## 5. Specifications
+## 5. Specifications and Standard Library
 
-Detailed specifications are available in the `specifications/` directory (currently in Chinese, translations pending):
+Detailed specifications are available in the `specifications/` directory (translations pending for V0.1/V0.2):
 
-*   [LAP V0.1 Specification](specifications/LAP_V0.1_zh.md) - Foundational theory and type system.
-*   [LAP V0.2 Specification](specifications/LAP_V0.2_zh.md) - Advanced routing and multi-agent Event Bus coordination.
+*   **[LAP Standard Semantic Library](specifications/LAP_STANDARD_LIBRARY_en.md)** - The "MIME Types" of the protocol. Defines the universal Format tree and Semantic Tags for out-of-the-box interoperability between agents.
+*   [LAP V0.1 Specification (Chinese)](specifications/LAP_V0.1_zh.md) - Foundational theory and type system.
+*   [LAP V0.2 Specification (Chinese)](specifications/LAP_V0.2_zh.md) - Advanced routing, Tag system, and the Ground Truth Surface.
 
 ## 6. Reference Implementation
 

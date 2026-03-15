@@ -91,12 +91,13 @@ LAP 的诞生源于个人在构建 AI 应用时的一段探索与困惑。我曾
 
 我非常希望就这些问题与您进行更深入的探讨。如果您觉得将传统系统工程问题“语义化”是一条可行的路，或者您发现了其中的逻辑漏洞，请随时提交 Issue 或参与讨论。
 
-## 5. 规范文档
+## 5. 规范文档与标准库
 
 详细的协议规范位于 `specifications/` 目录下：
 
+*   **[LAP 核心语义标准库 (中文)](specifications/LAP_STANDARD_LIBRARY_zh.md)** - 协议的“MIME Types”，定义了通用的 Format 树与语义标签表，用于不同 Agent 之间开箱即用的交流。
 *   [LAP V0.1 核心规范 (中文)](specifications/LAP_V0.1_zh.md) - 基础理论与类型系统。
-*   [LAP V0.2 核心规范 (中文)](specifications/LAP_V0.2_zh.md) - 高级路由与多 Agent 协同。
+*   [LAP V0.2 核心规范 (中文)](specifications/LAP_V0.2_zh.md) - 高级路由、标签系统与基准真理面。
 
 ## 6. 参考实践
 

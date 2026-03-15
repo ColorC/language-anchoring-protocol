@@ -10,10 +10,10 @@ we define semantic `Formats` (e.g., `agent-state` vs `agent-state-compressed`) a
 use `Anchors` to enforce them.
 """
 
-from omnifactory.protocol.anchor import (
+from lap.protocol.anchor import (
     AnchorSpec, Route, RouteAction, TransformerSpec, TransformMethod, ValidatorKind, ValidatorSpec, VerdictKind
 )
-from omnifactory.protocol.pipeline import NodeKind, PipelineEdge, PipelineNode, PipelineSpec
+from lap.protocol.pipeline import NodeKind, PipelineEdge, PipelineNode, PipelineSpec
 
 def build_full_codeact_pipeline() -> PipelineSpec:
     """
