@@ -6,7 +6,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)]()
 [中文文档 (Chinese)](README_zh.md)
 
-*We urgently need professional feedback and community validation. See the "Seeking Professional Validation" section.*
+*I urgently need professional feedback and community validation. See the "Seeking Professional Validation" section.*
 
 ## 1. What is LAP?
 
@@ -42,7 +42,7 @@ A question kept arising: **Why are there so many expressions of AI workflows, ye
 
 I needed a unified interface that could treat requirements, architectural designs, code, review comments, and commit histories as variations of the same underlying substance. Currently, choosing a workflow tool means heavy vendor lock-in. Moreover, most existing node-based flowcharts are static mappings of explicit processes; they are rarely flexible enough to allow agents to freely "think and write".
 
-While traditional flowcharts have always lacked universal contracts, the era of Large Language Models has unified the core processing object: **Language**. Because the object is unified, we should have a universal contract.
+While traditional flowcharts have always lacked universal contracts, the era of Large Language Models has unified the core processing object: **Language**. Because the object is unified, there should be a universal contract.
 
 **This is not something that should have a "moat."** It is far too universal. Anyone's understanding of Standard Operating Procedures (SOPs) and semantic objects should be able to serve as nourishment for this ecosystem. High-quality, self-adaptive, automated AI cluster services should not be the exclusive privilege of a few tech giants.
 
