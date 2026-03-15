@@ -494,12 +494,11 @@ FULLY_COMPATIBLE(source, target) =
   Code → TestResult       (测试执行)
 ```
 
-**关键洞察：Transformer 操作本质上是有损的。** 
+**关键洞察：Transformer 操作本质上是有损的转移。** 
 从 `Requirement` 到 `Code`，需求中宏观的业务背景被丢弃，坍缩为具体的代码逻辑。
-因此，Transformer 是一次软锚定，它不仅需要格式转换，还需要在后续的硬锚点中引入“**语义忠实度 (Fidelity / Faithfulness)**”的校验——检查输出是否忠实地反映了输入的意图。
+因此，Transformer 是一次软锚定。这就引出了 LAP 协议处理大模型幻觉的**根本性铁律 (Fundamental Rule)：所有的输出必须绝对忠实于输入（Semantic Fidelity）**。
 
-**这引出了一个极其重要的标签：`semantic.lossless` 或 `semantic.faithful`**。
-在 LAP 的高级实践中，如果一个 Agent 声称自己输出了与输入要求完全匹配的 `Code`，它必须通过一个专门比对“原需求”与“新代码”的 Anchor，才能被授予 `semantic.faithful` 标签。没有这个标签，产物在语义上就是存疑的（即你提到的“无论什么需求都输出同一段代码”的欺骗行为）。
+在 LAP 的高级实践中，“忠实于原需求”不应被降级为一个可选的 Tag，而应该被视为一种**贯穿全生命周期的历史约束**。如果一个 Agent 声称自己输出了 `Code`，它必须通过一个专门比对“原需求”与“新代码”的 Anchor（即进行一次基于源输入的 Ground Truth 校验）。如果没有这种“基于输入的强对应”，任何转换产物（即使格式完全正确）在语义上都是存疑的（例如 Agent 可能会“无论什么需求都输出同一段预置代码”以骗过格式校验）。
 
 ### 4.5 类型推断
 

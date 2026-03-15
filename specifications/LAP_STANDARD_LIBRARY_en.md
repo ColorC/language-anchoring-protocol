@@ -41,7 +41,7 @@ In LAP, we strictly distinguish between "Structural Inheritance (Is-A)" and "Sem
 
 ### 1.2 Semantic Derivation Path (Derives-From)
 
-Pipelines define state transitions via Transformers (which entail potential semantic loss, requiring verification via the `semantic.faithful` tag later):
+Pipelines define state transitions via Transformers (which entail potential macro-semantic loss, thus requiring strict "semantic fidelity" verification by downstream Anchors):
 `Requirement => Spec => Code => TestResult`
 
 ## 2. Fundamental Format Definitions
@@ -75,11 +75,7 @@ In LAP V0.2, Tags are used to define unstructured semantic facets that cross-cut
 *   `validation.syntax`: Passed initial syntax validation, but not yet logically validated.
 *   `validation.security`: Passed code security scanning.
 
-### 3.3 Semantic Fidelity
-
-*   `semantic.faithful`: **Semantic Lossless / Faithful**. Indicates that this data (e.g., Code) has been verified by an Anchor to perfectly and faithfully implement the intent of its upstream source (e.g., a Requirement). No unprompted additions, no omissions. This is the ultimate tag to defend against LLM hallucinations or "outputting the same generic code regardless of input."
-
-### 3.4 Evolution & Self-Healing (Evolution Engine)
+### 3.3 Evolution & Self-Healing (Evolution Engine)
 *   `evolution.residual`: Marked as a "Residual"—data that is self-consistent within the pipeline but rejected by the physical world, triggering system evolution.
 *   `evolution.attribution`: Semantic attribution result, indicating whether a failure was due to over-generation (MORE), omission (LESS), or logical error (WRONG).
 

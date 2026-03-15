@@ -41,7 +41,7 @@
 
 ### 1.2 语义衍生路径 (Derives-From)
 
-管线通过 Transformer 定义状态转移（伴随潜在的语义丢失，需要通过后续的 `semantic.faithful` 标签来验证）：
+管线通过 Transformer 定义状态转移（伴随潜在的宏观语义丢失，因此需要通过后续的 Anchor 强制进行“忠实度校验”）：
 `Requirement => Spec => Code => TestResult`
 
 ## 2. 基础 Format 定义详解
@@ -75,11 +75,8 @@
 *   `validation.syntax`: 通过了初步的语法校验，但尚未进行逻辑校验。
 *   `validation.security`: 通过了代码安全扫描。
 
-### 3.3 语义保真度 (Semantic Fidelity)
+### 3.3 进化与自我修复 (Evolution Engine)
 
-*   `semantic.faithful`: **语义无损/忠实**。表示该数据（如一段代码）已经被特定的 Anchor 验证过，它完美且忠实地实现了其上游来源（如一段需求）的意图。没有夹带私货，也没有遗漏。这是防御 Agent 产生幻觉或“无论输入什么都输出同样代码”的最重要标签。
-
-### 3.4 进化与自我修复 (Evolution Engine)
 *   `evolution.residual`: 标记为“残差”，即管线内自洽但被物理世界打脸的数据，需要触发系统进化。
 *   `evolution.attribution`: 语义归因结果，标明是由于过度生成(MORE)、缺失(LESS)还是错误(WRONG)导致的问题。
 
