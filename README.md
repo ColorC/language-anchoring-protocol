@@ -93,11 +93,11 @@ I am eager to discuss these concepts further. If you believe "semanticizing" tra
 
 ## 5. Specifications and Standard Library
 
-Detailed specifications are available in the `specifications/` directory (translations pending for V0.1/V0.2):
+Detailed specifications are available in the `specifications/` directory:
 
 *   **[LAP Standard Semantic Library](specifications/LAP_STANDARD_LIBRARY_en.md)** - The "MIME Types" of the protocol. Defines the universal Format tree and Semantic Tags for out-of-the-box interoperability between agents.
-*   [LAP V0.1 Specification (Chinese)](specifications/LAP_V0.1_zh.md) - Foundational theory and type system.
-*   [LAP V0.2 Specification (Chinese)](specifications/LAP_V0.2_zh.md) - Advanced routing, Tag system, and the Ground Truth Surface.
+*   [LAP V0.1 Specification (English)](specifications/LAP_V0.1_en.md) - Foundational theory and type system.
+*   [LAP V0.2 Specification (English)](specifications/LAP_V0.2_en.md) - Advanced routing, Tag system, and the Ground Truth Surface.
 
 ## 6. Reference Implementation
 
