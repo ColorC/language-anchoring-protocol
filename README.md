@@ -8,80 +8,142 @@
 
 *I urgently need professional feedback and community validation. See the "Seeking Professional Validation" section.*
 
+---
+
 ## 1. What is LAP?
 
-Is LAP a protocol? Yes.
+Is it a protocol? Yes.
 Is it in its final, complete form? Not yet. 
 
 However, its core definition is very clear: **When data enters a processing node, it must conform to a specific semantic format; when it exits, it must conform to another specific semantic format.**
 
-In LAP, every step of an AI workflow is treated as an **"Anchor"**. It binds the probabilistic output of an LLM to a deterministic format with specific semantics.
+Simply put, it's like a **"Import/Export Standard"** for AI workflows: it dictates what the data must look like when it **enters** and what it must become when it **exits**, ensuring the AI's processing is no longer "flying blind."
+
+In LAP, every step of an AI workflow is treated as an **"Anchor"**. Its role is to take the probabilistic, "best guess" output of an LLM and "anchor" it—like dropping a heavy anchor to steady a ship—into a deterministic format with specific semantics required by the downstream system.
+
 ```text
 Anchor = (Format_In, Validator → Verdict → Route) → Format_Out
 ```
 
 ### 1.1 Core Traits
-*   **Atomization:** The protocol atomizes semantics and semantic contracts into indivisible processing units.
-*   **Universality:** A requirement is a requirement, regardless of where it comes from (a chat, a Jira ticket, a GitHub issue).
-*   **Neural Network Compatibility:** With atomic operations, routing capabilities, and high human-readability, LAP operates on *semantics* rather than mathematical computation or weights. 
+*   **Atomization of Semantics:** Decomposes complex processing flows into indivisible semantic transformations.
+*   **Universal Applicability:** A requirement is a requirement, regardless of where it comes from (a chat, a ticket, or an issue).
+*   **Readability & Macro-Neural Potential:** With atomic operations and routing capabilities, it operates on *semantics* rather than mathematical computation. It has the potential to become a carrier for **Semantic Neural Networks**.
 
-### 1.2 Familiar Concepts, Reimagined
+### 1.2 Architecture Comparison: Why LAP?
+
+To better understand the problem LAP solves, let's compare the architectural differences between Traditional Agents, standard Event Bus Agents, and LAP-driven Agents.
+
+#### 1. Traditional Agent (Hardcoded Loop)
+Traditional Agents (like early ReAct implementations) are often wrapped in a massive `while` loop filled with `if/else` statements. Business logic, error handling, and parsing logic are tightly coupled, making it hard to debug and even harder to extend.
+```mermaid
+graph TD
+    A[User Request] --> B[LLM Thought & Output]
+    B --> C{Parse Code}
+    C -- Parse Failed --> E[Generate Error Prompt]
+    E --> B
+    C -- Successfully Extracted Tool Call --> D[Execute Tool]
+    D --> F{Execution Success?}
+    F -- Yes --> G[Format Observation]
+    F -- No (Throws Exception) --> H[Format Error Stack]
+    G --> B
+    H --> B
+```
+
+#### 2. Standard Event Bus Agent (e.g., OpenHands)
+To decouple the system, modern frameworks introduce an Event Bus. The LLM and tools are split into independent consumers. While decoupled, **the data flowing on the bus lacks strong semantic contracts** (often just loose JSON dictionaries). Nodes rely on implicit agreements, leading to frequent "implicit type errors."
+```mermaid
+graph LR
+    subgraph Loose Event Bus
+        E1((Action Event))
+        E2((Observation Event))
+    end
+    
+    LLM[LLM Node] -- Publishes --> E1
+    E2 -- Subscribes to --> LLM
+    
+    Tool[Tool Node] -- Subscribes to --> E1
+    Tool -- Publishes --> E2
+```
+
+#### 3. LAP-Driven Agent (Semantic Contract Bus)
+Building upon the event bus, LAP introduces **unbypassable Security Checkpoints (Anchors)** and **strict type tags (Format)**. Any output must be verified, and the Verdict determines the data's routing. This provides the system with robust type safety and a native self-healing feedback loop.
+```mermaid
+graph TD
+    subgraph LAP Type-Safe Bus
+        S[[Format: agent-state]]
+        A[[Format: agent-action]]
+        O[[Format: tool-observation]]
+    end
+
+    subgraph LLM Checkpoint (Soft)
+        Val1{LLM Intent Verdict}
+        Val1 -- PASS (Task Complete) --> Emit[Final Answer]
+        Val1 -- FAIL (Needs Tool Call) --> A_out[Output Tagged Action]
+    end
+
+    subgraph Tool Checkpoint (Hard)
+        Val2{Execution & Syntax Check}
+        Val2 -- PASS (Success) --> O_out[Output Observation]
+        Val2 -- FAIL (With Diagnosis) --> O_out
+    end
+    
+    S -- Validated Match --> Val1
+    A_out -. Inject to Bus .-> A
+    A -- Validated Match --> Val2
+    O_out -. Inject to Bus .-> O
+    O -. Transformer Morpher .-> S
+    
+    style S fill:#d4edda,stroke:#28a745,stroke-width:2px
+    style A fill:#fff3cd,stroke:#ffc107,stroke-width:2px
+    style O fill:#cce5ff,stroke:#007bff,stroke-width:2px
+```
+
+---
+
+## 2. Familiar Concepts, Reimagined
 
 To demonstrate the elegance of LAP, consider how it reimagines the familiar **ReAct/CodeAct loop (e.g., the core logic of OpenHands)**.
 
-In traditional hardcoded implementations, this is often a complex `while` loop cluttered with `if/else` statements handling LLM parsing errors or tool execution failures. 
-
-Under the LAP Event Bus architecture, it is simply three extraordinarily clean semantic nodes:
+In traditional hardcoded implementations, this is often a complex `while` loop cluttered with `if/else` statements. Under the LAP Event Bus architecture, it is simply three extraordinarily clean semantic nodes:
 
 1.  **Context (Transformer Node):**
     *   **Semantic Contract:** `tool-observation` → `agent-state`
     *   **Logic:** Transforms raw tool outputs into a context state the LLM can process.
 2.  **LLM (Soft Anchor):**
     *   **Semantic Contract:** `agent-state` → `agent-action`
-    *   **Routing:** The LLM yields a Verdict. If it decides the task is complete (PASS), the pipeline Emits. If it issues a tool call (FAILs soft validation), it routes to the next Hard Anchor.
+    *   **Routing:** The LLM yields a Verdict. If it decides the task is complete (PASS), it Emits. If it issues a tool call (FAIL), it routes to the next Hard Anchor.
 3.  **Tool (Hard Anchor):**
     *   **Semantic Contract:** `agent-action` → `tool-observation`
-    *   **Native Traceability & Self-Healing:** Whether the tool executes successfully (PASS) or fails with an error stack trace (FAIL with Diagnosis), LAP routes the observation back to the `Context` node. The LLM natively reads the Diagnosis in the next tick to self-heal.
+    *   **Self-Healing:** Whether the tool succeeds (PASS) or fails with an error (FAIL with Diagnosis), LAP routes it back to the `Context` node. The LLM natively reads the Diagnosis in the next tick to self-heal.
 
-This paradigm **completely decouples "business implementation" from "semantic contracts."** It is infinitely extensible. Because it runs purely on an Event Bus, every Verdict is natively tracked, creating the perfect substrate for model fine-tuning and architectural self-evolution (the Evolution Engine). See `examples/openhands_codeact_loop.py` for the code specification.
+This paradigm **completely decouples "business implementation" from "semantic contracts."**
 
-## 2. The Vision: Event Bus & Semantic Contracts
+---
 
-Current explicit graph mappings are often too rigid for truly autonomous agents. I believe the best architectural form for this is an **Event Bus**. 
+## 3. The Vision: Event Bus & Semantic Contracts
 
-LAP serves as the semantic type system that flows over this Event Bus. It doesn't dictate *how* an agent thinks; it dictates *what semantic contracts* the agent's inputs and outputs must adhere to. This allows different agents, created by different people, to collaborate seamlessly on the same bus, mutually verifying outputs and evolving at a systemic level.
+Current graph mappings are often too rigid for truly autonomous agents. We believe the best architectural form is an **Event Bus**. 
 
-Given these traits, LAP has the potential (just a potential, though perhaps a necessary one) to become a reasonable carrier for **Semantic Neural Networks**. 
-*> Note: Semantic Neural Networks can be viewed as a semantic alternative to Logical/Symbolic Neural Networks (LNNs). While their nodes are not as rigidly deterministic as traditional LNNs, LLMs allow for a smooth, probabilistic transition between these semantic states.*
+LAP serves as the semantic type system that flows over this Event Bus. It doesn't dictate *how* an agent thinks; it dictates *what semantic contracts* the agent's inputs and outputs must adhere to. This allows different agents to collaborate seamlessly, mutually verifying outputs and evolving at a systemic level.
 
-## 3. Origin and Exploration
+---
 
-The creation of LAP comes from a personal journey of frustration. I experimented with Langflow, LangSmith (LangGraph), referenced n8n and Dify, explored the Feishu Open Platform and Anycross, and even started writing my own LangGraphFlow. I also closely studied projects like OpenHands.
+## 4. Seeking Professional Validation
 
-A question kept arising: **Why are there so many expressions of AI workflows, yet a complete lack of a universal contract?**
+This architecture was driven by personal pain points in projects like OmniFactory. However, a true "Protocol" must withstand rigorous scrutiny. Senior engineers often raise two concerns:
+1.  **State Explosion & Deadlocks**: How to prevent context overflow when an LLM repeatedly fails?
+2.  **Concurrency & Consistency**: How to prevent "dirty writes" on a decentralized bus?
 
-I needed a unified interface that could treat requirements, architectural designs, code, review comments, and commit histories as variations of the same underlying substance. Currently, choosing a workflow tool means heavy vendor lock-in. Moreover, most existing node-based flowcharts are static mappings of explicit processes; they are rarely flexible enough to allow agents to freely "think and write".
+**LAP's Answer: Turn "engineering problems" into "semantic modeling problems."**
 
-While traditional flowcharts have always lacked universal contracts, the era of Large Language Models has unified the core processing object: **Language**. Because the object is unified, there should be a universal contract.
+In LAP, all inconsistencies are fundamentally **Missing Semantic Types** (Type Errors):
+*   **For State Explosion**: We simply define a `Hard Anchor: Length Checker`. If the state is too long (FAIL), it routes to a `Transformer: Context Compressor`.
+*   **For Concurrency**: We don't rely on the Agent's "verbal claim"; we rely on a **verified Git PR**. 
 
-**This is not something that should have a "moat."** It is far too universal. Anyone's understanding of Standard Operating Procedures (SOPs) and semantic objects should be able to serve as nourishment for this ecosystem. High-quality, self-adaptive, automated AI cluster services should not be the exclusive privilege of a few tech giants.
+This leads to a crucial meta-definition: **The Ground Truth Surface**.
 
-## 4. Seeking Professional Validation & Discussion
-
-This architectural concept was driven by personal pain points. While it solved many routing and architectural coupling issues in my own experiments (OmniFactory), I deeply understand that for something to be a true "Protocol," it must withstand rigorous scrutiny from the engineering and academic communities.
-
-When discussing LAP, senior engineers immediately raise two classic engineering concerns regarding "event-bus-based semantic routing":
-1.  **State Explosion & Deadlocks:** If an LLM repeatedly generates invalid outputs and is infinitely bounced back by a Hard Anchor, how do we prevent Context Overflow?
-2.  **Concurrency & Consistency (Dirty Writes):** On a decentralized event bus, how do we prevent multiple agents from concurrently making dirty commits to a codebase?
-
-**LAP's Answer: Turn traditional "engineering problems" into pure "semantic modeling problems" (a word game).**
-
-In LAP's worldview, every inconsistency or overflow is fundamentally a **Missing Semantic Type** (a Type Error):
-*   **For State Explosion:** LLMs have no physical memory. We simply define a `Hard Anchor: Length Checker`. If a `raw-agent-state` is too long, the anchor yields FAIL and routes it to a `Transformer: Context Compressor`. Only when it is compressed does it become a valid `agent-state` ready for the LLM. (See `examples/openhands_full_loop.py`).
-*   **For Concurrency:** We don't want an agent's "verbal claim" of a fix; we want a **verifiable Git PR**. If a dirty write occurs, the semantics are inaccurate. The pipeline inherently terminates at a Validator backed by a `Ground Truth` (e.g., Git state checker). Without proper locking semantics and state validation, the format simply cannot PASS.
-
-This naturally leads to a crucial meta-definition in the LAP protocol: **The Ground Truth Surface**.
-In the LAP space, the absolute upper bound of confidence (Confidence = 1.0) can only originate from strict external truths:
+This concept might sound mysterious, but it simply refers to **"Who has the final say?"**. In the LAP space, confidence (Confidence = 1.0) can only originate from strict external truths, not LLM claims:
 *   **Existing Code / Git States** (Code-source Truth)
 *   **The Internet** (Human-source Truth)
 *   **Sensors and Actuator Returns** (Physical-source Truth)
@@ -89,16 +151,16 @@ In the LAP space, the absolute upper bound of confidence (Confidence = 1.0) can 
 
 All Soft Anchors (LLMs) are merely probabilistic attempts striving to collapse into the Hard Anchors (Ground Truths).
 
-I am eager to discuss these concepts further. If you believe "semanticizing" traditional system engineering problems is a viable path, or if you spot logical flaws in this architecture, please feel free to open an issue or start a discussion.
+---
 
 ## 5. Specifications and Standard Library
 
-Detailed specifications are available in the `specifications/` directory:
-
-*   **[LAP Standard Semantic Library](specifications/LAP_STANDARD_LIBRARY_en.md)** - The "MIME Types" of the protocol. Defines the universal Format tree and Semantic Tags for out-of-the-box interoperability between agents.
-*   [LAP V0.1 Specification (English)](specifications/LAP_V0.1_en.md) - Foundational theory and type system.
+*   **[LAP Standard Semantic Library](specifications/LAP_STANDARD_LIBRARY_en.md)** - The "MIME Types" of the protocol.
+*   [LAP V0.1 Specification (English)](specifications/LAP_V0.1_en.md) - Foundational theory.
 *   [LAP V0.2 Specification (English)](specifications/LAP_V0.2_en.md) - Advanced routing, Tag system, and the Ground Truth Surface.
+
+---
 
 ## 6. Reference Implementation
 
-To prove this isn't just theory, the first reference implementation of the LAP protocol (including the Event Bus, Pipeline Engine, and a Meta-Evolution Engine) is being developed in the [OmniFactory](https://github.com/your-username/omnifactory) repository.
+The first reference implementation (including the Event Bus and Evolution Engine) is currently being developed and validated within the **OmniFactory** project.

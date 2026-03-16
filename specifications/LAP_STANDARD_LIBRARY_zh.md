@@ -5,44 +5,44 @@
 
 ---
 
-## 1. 核心 Format 分类与流转
+## 1. 核心 Format 分类与演变
 
-在 LAP 中，我们严格区分“结构继承 (Is-A)”与“语义衍生 (Derives-From)”。所有在事件总线上流淌的数据都属于某个基础大类，并且通过 Transformer 跨大类流转。
+在 LAP 中，我们关注两个维度：一个是数据**“本身是什么分类”**（结构继承），一个是数据在流程中**“如何演变形态”**（语义衍生）。所有在事件总线上流淌的数据都必须有一个明确的基础身份。
 
-### 1.1 结构继承树 (Is-A)
+### 1.1 数据分类树 (Is-A：它是什么)
 
 ```text
-1. Requirement (意图基类)
-   ├── FeatureRequirement (功能需求)
-   ├── BugfixRequirement  (修复需求)
-   ├── ChatMessage        (对话形态输入)
-   └── Ticket             (工单形态意图)
+1. Requirement (需求/意图类)
+   ├── FeatureRequirement (新功能需求)
+   ├── BugfixRequirement  (改 Bug 需求)
+   ├── ChatMessage        (对话式的输入)
+   └── Ticket             (来自工单系统的意图)
 
-2. Spec (结构化规格基类)
-   ├── TaskSpec           (带验证标准的任务规格)
-   ├── Doc                (人类可读文档)
-   └── APIDoc             (机器可读接口文档)
+2. Spec (方案/规格类)
+   ├── TaskSpec           (带验收标准的任务书)
+   ├── Doc                (给人读的文档)
+   └── APIDoc             (给机器读的接口定义)
 
-3. Code (可执行逻辑基类)
-   ├── CodePatch          (代码补丁/Diff)
-   └── Binary             (编译产物)
+3. Code (实现/逻辑类)
+   ├── CodePatch          (代码改动/Diff)
+   └── Binary             (编译出来的二进制)
 
-4. Verification (验证与报告基类)
-   ├── TestPlan           (测试策略)
-   ├── TestResult         (测试执行报告)
-   ├── TestVerdict        (外部硬锚定测试结果/Ground Truth)
-   └── CISignal           (持续集成信号)
+4. Verification (验证/报告类)
+   ├── TestPlan           (测试怎么做的方案)
+   ├── TestResult         (测试跑出来的报告)
+   ├── TestVerdict        (判定结果/外部真理)
+   └── CISignal           (流水线信号)
 
-5. AgentRuntime (运行时状态基类)
-   ├── AgentState         (上下文)
-   ├── AgentAction        (决策输出)
-   └── ToolObservation    (工具反馈)
+5. AgentRuntime (运行时状态)
+   ├── AgentState         (Agent 脑子里的上下文)
+   ├── AgentAction        (Agent 决定要干啥，如调工具)
+   └── ToolObservation    (工具执行完返回的结果)
 ```
 
-### 1.2 语义衍生路径 (Derives-From)
+### 1.2 语义演变路径 (Derives-From：怎么变身)
 
-管线通过 Transformer 定义状态转移（伴随潜在的宏观语义丢失，因此需要通过后续的 Anchor 强制进行“忠实度校验”）：
-`Requirement => Spec => Code => TestResult`
+数据在流水线中会通过 Transformer 发生形态转换。**注意：转换过程中可能会丢失原始意图的细节**，因此必须通过后续的“检查站（Anchor）”来把关，确保产物依然忠实于原始需求。
+典型路径：`需求 (Requirement) => 方案 (Spec) => 代码 (Code) => 结果 (TestResult)`
 
 ## 2. 基础 Format 定义详解
 
