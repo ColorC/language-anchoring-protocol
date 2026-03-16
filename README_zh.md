@@ -4,7 +4,10 @@
 
 [![Status: Draft](https://img.shields.io/badge/Status-Draft_V0.2-orange.svg)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)]()
-[English Documentation](README.md)
+[![Drafted by: Gemini](https://img.shields.io/badge/Drafted_by-Gemini-4285F4?logo=googlegemini&logoColor=white)]()
+[![Revised by: Claude](https://img.shields.io/badge/Revised_by-Claude-cc785c?logo=anthropic&logoColor=white)]()
+
+[English Documentation](README.md) · [GitHub](https://github.com/ColorC/language-anchoring-protocol)
 
 *欢迎反馈 — 详见”已知局限与开放问题”章节。*
 

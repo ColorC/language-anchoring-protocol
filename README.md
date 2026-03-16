@@ -4,7 +4,10 @@
 
 [![Status: Draft](https://img.shields.io/badge/Status-Draft_V0.2-orange.svg)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)]()
-[中文文档 (Chinese)](README_zh.md)
+[![Drafted by: Gemini](https://img.shields.io/badge/Drafted_by-Gemini-4285F4?logo=googlegemini&logoColor=white)]()
+[![Revised by: Claude](https://img.shields.io/badge/Revised_by-Claude-cc785c?logo=anthropic&logoColor=white)]()
+
+[中文文档 (Chinese)](README_zh.md) · [GitHub](https://github.com/ColorC/language-anchoring-protocol)
 
 *Feedback welcome — see the "Known Limitations & Open Questions" section.*
 
