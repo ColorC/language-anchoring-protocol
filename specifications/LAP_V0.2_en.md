@@ -41,7 +41,7 @@ Yet, we've built an entire industry around it. **All these applications fundamen
 - Human review is anchoring—verifying business intent.
 - CI/CD Pipelines are anchoring—verifying deployment conditions.
 
-**They are all different instances of the same action. But no one has named this action, and no one has defined a protocol for it.**
+**They are all different instances of the same pattern.** Related work such as Design by Contract (Eiffel, 1986), Guardrails AI, and DSPy have addressed aspects of this pattern. LAP attempts to unify these operations under a single typed framework.
 
 ---
 

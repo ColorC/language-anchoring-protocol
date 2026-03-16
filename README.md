@@ -1,21 +1,20 @@
 # Language Anchoring Protocol (LAP)
 
-**A humble attempt at a universal semantic contract and processing protocol for AI agent workflows.**
+**A design framework for building type-safe, verifiable AI agent workflows — inspired by Design by Contract and typed dataflow.**
 
 [![Status: Draft](https://img.shields.io/badge/Status-Draft_V0.2-orange.svg)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)]()
 [中文文档 (Chinese)](README_zh.md)
 
-*I urgently need professional feedback and community validation. See the "Seeking Professional Validation" section.*
+*Feedback welcome — see the "Known Limitations & Open Questions" section.*
 
 ---
 
 ## 1. What is LAP?
 
-Is it a protocol? Yes.
-Is it in its final, complete form? Not yet. 
+LAP is a set of design patterns and primitives for structuring AI agent workflows. It is not yet a full protocol specification — it is closer to an **architecture pattern** that may evolve into a protocol with community input and validation.
 
-However, its core definition is very clear: **When data enters a processing node, it must conform to a specific semantic format; when it exits, it must conform to another specific semantic format.**
+Its core definition is clear: **When data enters a processing node, it must conform to a specific semantic format; when it exits, it must conform to another specific semantic format.**
 
 Simply put, it's like a **"Import/Export Standard"** for AI workflows: it dictates what the data must look like when it **enters** and what it must become when it **exits**, ensuring the AI's processing is no longer "flying blind."
 
@@ -28,7 +27,7 @@ Anchor = (Format_In, Validator → Verdict → Route) → Format_Out
 ### 1.1 Core Traits
 *   **Atomization of Semantics:** Decomposes complex processing flows into indivisible semantic transformations.
 *   **Universal Applicability:** A requirement is a requirement, regardless of where it comes from (a chat, a ticket, or an issue).
-*   **Readability & Macro-Neural Potential:** With atomic operations and routing capabilities, it operates on *semantics* rather than mathematical computation. It has the potential to become a carrier for **Semantic Neural Networks**.
+*   **Readability & Composability:** With atomic operations and routing capabilities, pipelines are human-readable and composable, making them easy to reason about, debug, and extend.
 
 ### 1.2 Architecture Comparison: Why LAP?
 
@@ -121,46 +120,59 @@ This paradigm **completely decouples "business implementation" from "semantic co
 
 ---
 
-## 3. The Vision: Event Bus & Semantic Contracts
+## 3. Design Goal: Event Bus & Semantic Contracts
 
-Current graph mappings are often too rigid for truly autonomous agents. We believe the best architectural form is an **Event Bus**. 
+Current graph mappings are often too rigid for truly autonomous agents. LAP explores the **Event Bus** as an alternative architectural form.
 
-LAP serves as the semantic type system that flows over this Event Bus. It doesn't dictate *how* an agent thinks; it dictates *what semantic contracts* the agent's inputs and outputs must adhere to. This allows different agents to collaborate seamlessly, mutually verifying outputs and evolving at a systemic level.
+LAP serves as the semantic type system that flows over this Event Bus. It doesn't dictate *how* an agent thinks; it dictates *what semantic contracts* the agent's inputs and outputs must adhere to. The near-term goal is to enable better observability, type-safe pipeline composition, and structured self-healing feedback loops within a single project.
 
 ---
 
-## 4. Seeking Professional Validation
+## 4. Known Limitations & Open Questions
 
-This architecture was driven by personal pain points in projects like OmniFactory. However, a true "Protocol" must withstand rigorous scrutiny. Senior engineers often raise two concerns:
-1.  **State Explosion & Deadlocks**: How to prevent context overflow when an LLM repeatedly fails?
-2.  **Concurrency & Consistency**: How to prevent "dirty writes" on a decentralized bus?
+This architecture was driven by personal pain points in projects like OmniFactory. It has helped decouple business logic from validation concerns, but several hard problems remain open:
 
-**LAP's Answer: Turn "engineering problems" into "semantic modeling problems."**
+1.  **State Explosion & Deadlocks**: If an LLM repeatedly fails validation, the context grows unboundedly. LAP's approach is to model this as a type problem — inserting a `Length Checker` Anchor that routes to a `Context Compressor`. This is essentially equivalent to writing `if len(context) > limit: compress()`, expressed in LAP's vocabulary. Whether this reframing provides practical benefits over direct implementation remains to be validated.
 
-In LAP, all inconsistencies are fundamentally **Missing Semantic Types** (Type Errors):
-*   **For State Explosion**: We simply define a `Hard Anchor: Length Checker`. If the state is too long (FAIL), it routes to a `Transformer: Context Compressor`.
-*   **For Concurrency**: We don't rely on the Agent's "verbal claim"; we rely on a **verified Git PR**. 
+2.  **Concurrency & Consistency**: Multiple agents modifying shared state (e.g., a codebase) can cause dirty writes. LAP suggests relying on external Ground Truth validators (e.g., Git state checks) as terminal Anchors. This delegates the problem to existing infrastructure rather than solving it at the protocol level — an honest limitation.
 
-This leads to a crucial meta-definition: **The Ground Truth Surface**.
+Despite these open questions, LAP introduces one concept we believe is genuinely useful: **The Ground Truth Surface**.
 
-This concept might sound mysterious, but it simply refers to **"Who has the final say?"**. In the LAP space, confidence (Confidence = 1.0) can only originate from strict external truths, not LLM claims:
+This simply refers to **"Who has the final say?"** In LAP, system confidence (Confidence = 1.0) can only originate from strict external truths, not LLM self-assessment:
 *   **Existing Code / Git States** (Code-source Truth)
 *   **The Internet** (Human-source Truth)
 *   **Sensors and Actuator Returns** (Physical-source Truth)
 *   **Compilers and Mathematical Theorems** (Logical-source Truth)
 
-All Soft Anchors (LLMs) are merely probabilistic attempts striving to collapse into the Hard Anchors (Ground Truths).
+All Soft Anchors (LLMs) are probabilistic attempts striving to collapse into Hard Anchors (Ground Truths). This framing helps practitioners reason about where to invest in validation within their pipelines.
 
 ---
 
-## 5. Specifications and Standard Library
+## 5. Related Work & Inspirations
 
-*   **[LAP Standard Semantic Library](specifications/LAP_STANDARD_LIBRARY_en.md)** - The "MIME Types" of the protocol.
+LAP builds on ideas from several established fields. We acknowledge these influences:
+
+| Concept | Origin | LAP's Relation |
+|---------|--------|----------------|
+| **Design by Contract** | Eiffel (Bertrand Meyer, 1986) | Preconditions/postconditions/invariants map directly to Format_In/Format_Out/Validator |
+| **Typed Dataflow** | Programming language theory | Format inheritance and Pipeline type-checking are applications of typed dataflow |
+| **Guardrails AI** | Guardrails AI (2023) | Composable validator chains with retry — closely related to LAP's Anchor chains |
+| **DSPy** | Stanford NLP (2023) | Signatures + assertions + optimization — similar typed-contract approach for LLM programs |
+| **NeMo Guardrails** | NVIDIA (2023) | Dialogue policy enforcement via rails — domain-specific anchoring for conversations |
+| **CloudEvents** | CNCF | Standardized event envelope — similar goal for event bus interoperability |
+
+**What LAP adds**: A unified vocabulary (Anchor, Format, Verdict, Route) that spans all these patterns, plus a type system with inheritance and compile-time checking. Whether this unification provides sufficient practical value over using these tools directly is the key question LAP needs to answer through real-world validation.
+
+---
+
+## 6. Specifications and Standard Library
+
+*   **[LAP Standard Semantic Library](specifications/LAP_STANDARD_LIBRARY_en.md)** - The "MIME Types" of the framework.
 *   [LAP V0.1 Specification (English)](specifications/LAP_V0.1_en.md) - Foundational theory.
 *   [LAP V0.2 Specification (English)](specifications/LAP_V0.2_en.md) - Advanced routing, Tag system, and the Ground Truth Surface.
 
 ---
 
-## 6. Reference Implementation
+## 7. Reference Implementation
 
 The first reference implementation (including the Event Bus and Evolution Engine) is currently being developed and validated within the **OmniFactory** project.
