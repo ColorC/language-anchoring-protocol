@@ -76,13 +76,13 @@ graph TD
         O[[Format: tool-observation]]
     end
 
-    subgraph LLM Checkpoint (Soft)
+    subgraph LLM Soft Checkpoint
         Val1{LLM Intent Verdict}
         Val1 -- PASS (Task Complete) --> Emit[Final Answer]
         Val1 -- FAIL (Needs Tool Call) --> A_out[Output Tagged Action]
     end
 
-    subgraph Tool Checkpoint (Hard)
+    subgraph Tool Hard Checkpoint
         Val2{Execution & Syntax Check}
         Val2 -- PASS (Success) --> O_out[Output Observation]
         Val2 -- FAIL (With Diagnosis) --> O_out
