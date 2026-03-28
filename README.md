@@ -1,4 +1,4 @@
-# Language Anchoring Protocol (LAP)
+# Language Anchoring Framework (LAP)
 
 **A design framework for building type-safe, verifiable AI agent workflows — inspired by Design by Contract and typed dataflow.**
 
@@ -14,6 +14,8 @@
 ---
 
 ## 1. What is LAP?
+
+> **⚠️ Experimental Status**: LAP is an early-stage design framework. The type system, semantic relations, and runtime primitives are hypotheses under active validation in the [OmniFactory](https://github.com/ColorC/omnifactory) project. This repository contains **definitions and reference code only** — production implementation and testing happen in OmniFactory.
 
 LAP is a set of design patterns and primitives for structuring AI agent workflows. It is not yet a full protocol specification — it is closer to an **architecture pattern** that may evolve into a protocol with community input and validation.
 
@@ -129,6 +131,8 @@ Current graph mappings are often too rigid for truly autonomous agents. LAP expl
 
 LAP serves as the semantic type system that flows over this Event Bus. It doesn't dictate *how* an agent thinks; it dictates *what semantic contracts* the agent's inputs and outputs must adhere to. The near-term goal is to enable better observability, type-safe pipeline composition, and structured self-healing feedback loops within a single project.
 
+> **Note on "Protocol" vs "Framework"**: Despite the repository name, LAP is currently a **design framework** (architecture pattern + reference primitives), not an interoperability protocol. The name "Language Anchoring Protocol" is retained in some references for historical continuity, but we use "Framework" to set honest expectations. Upgrading to "Protocol" status requires multi-party implementations, conformance tests, and a wire format — none of which exist yet.
+
 ---
 
 ## 4. Known Limitations & Open Questions
@@ -137,7 +141,13 @@ This architecture was driven by personal pain points in projects like OmniFactor
 
 1.  **State Explosion & Deadlocks**: If an LLM repeatedly fails validation, the context grows unboundedly. LAP's approach is to model this as a type problem — inserting a `Length Checker` Anchor that routes to a `Context Compressor`. This is essentially equivalent to writing `if len(context) > limit: compress()`, expressed in LAP's vocabulary. Whether this reframing provides practical benefits over direct implementation remains to be validated.
 
-2.  **Concurrency & Consistency**: Multiple agents modifying shared state (e.g., a codebase) can cause dirty writes. LAP suggests relying on external Ground Truth validators (e.g., Git state checks) as terminal Anchors. This delegates the problem to existing infrastructure rather than solving it at the protocol level — an honest limitation.
+2.  **Concurrency & Consistency**: Multiple agents modifying shared state (e.g., a codebase) can cause dirty writes. LAP suggests relying on external Ground Truth validators (e.g., Git state checks) as terminal Anchors. This delegates the problem to existing infrastructure rather than solving it at the framework level — an honest limitation.
+
+3.  **Type System Gaps**: The semantic relation model (Composition, Synthesis, Transformation, Inheritance) is a hypothesis. Only Inheritance and Transformation are partially implemented in the reference code. The full relation system is being validated in OmniFactory's Evolution Engine.
+
+4.  **Implementation-Spec Gaps**: V0.2 features (`confidence`, `granted_tags`, tag propagation, `required_tags` checking) are defined as Pydantic fields but **not yet used** by `PipelineRunner` or `PipelineChecker`. These are forward declarations awaiting OmniFactory validation.
+
+5.  **No Tests in This Repo**: This repository contains definitions and reference code. Testing and production validation happen in the OmniFactory project.
 
 Despite these open questions, LAP introduces one concept we believe is genuinely useful: **The Ground Truth Surface**.
 
@@ -158,13 +168,13 @@ LAP builds on ideas from several established fields. We acknowledge these influe
 | Concept | Origin | LAP's Relation |
 |---------|--------|----------------|
 | **Design by Contract** | Eiffel (Bertrand Meyer, 1986) | Preconditions/postconditions/invariants map directly to Format_In/Format_Out/Validator |
-| **Typed Dataflow** | Programming language theory | Format inheritance and Pipeline type-checking are applications of typed dataflow |
+| **Typed Dataflow** | Programming language theory | Format relations and Pipeline type-checking are applications of typed dataflow |
 | **Guardrails AI** | Guardrails AI (2023) | Composable validator chains with retry — closely related to LAP's Anchor chains |
 | **DSPy** | Stanford NLP (2023) | Signatures + assertions + optimization — similar typed-contract approach for LLM programs |
 | **NeMo Guardrails** | NVIDIA (2023) | Dialogue policy enforcement via rails — domain-specific anchoring for conversations |
 | **CloudEvents** | CNCF | Standardized event envelope — similar goal for event bus interoperability |
 
-**What LAP adds**: A unified vocabulary (Anchor, Format, Verdict, Route) that spans all these patterns, plus a type system with inheritance and compile-time checking. Whether this unification provides sufficient practical value over using these tools directly is the key question LAP needs to answer through real-world validation.
+**What LAP adds**: A unified vocabulary (Anchor, Format, Verdict, Route) that spans all these patterns, plus a semantic relation model (Composition, Synthesis, Transformation, Inheritance) with compile-time checking. Whether this unification provides sufficient practical value over using these tools directly is the key question LAP needs to answer through real-world validation.
 
 ---
 
@@ -173,6 +183,8 @@ LAP builds on ideas from several established fields. We acknowledge these influe
 *   **[LAP Standard Semantic Library](specifications/LAP_STANDARD_LIBRARY_en.md)** - The "MIME Types" of the framework.
 *   [LAP V0.1 Specification (English)](specifications/LAP_V0.1_en.md) - Foundational theory.
 *   [LAP V0.2 Specification (English)](specifications/LAP_V0.2_en.md) - Advanced routing, Tag system, and the Ground Truth Surface.
+
+> **Implementation Note**: The reference implementation in `python_impl/` is a proof-of-concept companion to the specifications. Production implementation, validation, and testing are conducted in the [OmniFactory](https://github.com/ColorC/omnifactory) project.
 
 ---
 

@@ -4,15 +4,35 @@ LAP Format — 语义类型系统
 Format 是 LAP 的灵魂。它不是 JSON Schema 那种结构定义，
 而是携带语义的类型——描述"流过管线的这个东西是什么"。
 
-Format 之间存在继承关系（语义继承）：
-    子类型保持父类型的意图语义，但改变了表达结构。
-    Code <: Spec <: Requirement
+语义之间存在四种关系（非仅继承）：
 
-类型兼容性规则:
+    1. 继承 (Inheritance, A ⊂ B):
+       子类型保持父类型的语义，是更具体的特化。
+       例: PythonCode ⊂ Code, FeatureRequirement ⊂ Requirement
+       类型兼容性: 需要 B 的地方可以传 A（协变）。
+
+    2. 转换 (Transformation, A → B):
+       有语义连续性的形态变化，由 Transformer 驱动（通常是 LLM）。
+       转换是有损的——原始信息被坍缩。
+       例: Requirement → Code（编程）, Code → Doc（文档化）
+       注意: A 和 B 没有继承关系。Code 不是 Requirement 的子类型。
+
+    3. 组合 (Composition, A ∪ B):
+       两个独立语义域的数据合在一起，无交集，形成新的聚合。
+       例: AgentState + ToolObservation 组合成新的上下文输入。
+
+    4. 合成 (Synthesis, A ∩ B):
+       两个语义域有重叠的共同部分，提取交集。
+       例: 多个 Requirement 的共同约束提取为 Spec。
+
+类型兼容性规则 (仅基于继承):
     COMPATIBLE(A, B) =
         A == B                          直连（短路）
         OR A <: B                       A 是 B 的子类型，自动向上转型
         OR EXISTS Transformer(A → B)    显式转换可用
+
+    转换、组合、合成关系不提供自动类型兼容性——它们需要显式的
+    Transformer 节点来桥接。
 """
 
 from __future__ import annotations
@@ -51,7 +71,7 @@ class Format(BaseModel):
 
     description: str
     """自然语言语义描述。
-    这是协议的"语言锚定"之根——LLM 和人类都能读懂。"""
+    这是框架的"语言锚定"之根——LLM 和人类都能读懂。"""
 
     parent: str | None = None
     """父类型 ID。None 表示根类型。
@@ -134,8 +154,8 @@ class FormatRegistry:
         child <: parent 意味着:
         child 可以在需要 parent 的地方使用（协变）
 
-        例: is_subtype("code", "requirement") → True
-            is_subtype("requirement", "code") → False
+        例: is_subtype("code", "spec") → True
+            is_subtype("agent-action", "requirement") → False (不同语义域)
         """
         if child == parent:
             return True
@@ -144,13 +164,13 @@ class FormatRegistry:
     def compatible(self, source: str, target: str) -> bool:
         """检查 source 类型是否可以连接到 target 类型
 
-        三种兼容方式:
+        兼容性仅基于继承关系:
         1. 相同类型 → 直连
         2. source 是 target 的子类型 → 自动向上转型
         3. 需要 Transformer → 由调用方处理（此处返回 False）
 
-        注意: 反向（父→子）不自动兼容，需要显式 Transformer。
-        例如 Requirement → Code 需要 Transformer（本质上就是编程）。
+        注意: 跨语义域（如 agent-action → requirement）不自动兼容，
+        需要显式 Transformer 桥接。
         """
         return self.is_subtype(source, target)
 
@@ -182,7 +202,7 @@ class FormatRegistry:
 
         return ConnectionCheck(
             compatible=False,
-            reason=f"类型冲突: {source} 与 {target} 无继承关系",
+            reason=f"类型不兼容: {source} 与 {target} 无继承关系，需要 Transformer 桥接",
             needs_transformer=True,
             transformer_from=source,
             transformer_to=target,
@@ -225,14 +245,22 @@ class ConnectionCheck(BaseModel):
 #
 # 这是 LAP 的"标准库"——一组预定义的语义类型。
 # 用户可以扩展，但这些是最常用的。
+#
+# 注意：类型之间有两种独立的关系维度：
+#   1. 继承 (parent): PythonCode ⊂ Code（同一语义域内的特化）
+#   2. 转换 (Transformer): Requirement → Code（跨语义域的形态演变）
+#
+# Agent 运行时类型 (agent-state, agent-action, tool-observation) 是
+# 独立的语义域，不是 requirement 的子类型。它们通过 Transformer
+# 与意图域连接，而非继承。
 
 BUILTIN_FORMATS = [
-    # 根类型
+    # ── 意图域 (Intent Domain) ──
+    # 根类型：一个有状态的意图
     Format(
         id="requirement",
         name="Requirement",
-        description="一个有状态的意图。LAP 类型系统的根类型。"
-        "所有流过管线的数据都是某种形态的需求。",
+        description="一个有状态的意图。意图域的根类型。",
     ),
     # Requirement 的直接子类型
     Format(
@@ -259,6 +287,8 @@ BUILTIN_FORMATS = [
         description="持续集成信号。构建失败、测试失败、安全告警等。",
         parent="requirement",
     ),
+
+    # ── 方案域 (Spec Domain) ──
     # Spec 的子类型
     Format(
         id="code",
@@ -299,25 +329,38 @@ BUILTIN_FORMATS = [
         description="机器+人类可读的接口描述。OpenAPI Spec、GraphQL Schema。",
         parent="doc",
     ),
-    # 独立类型: Agent 运行时
+
+    # ── Agent 运行时域 (Agent Runtime Domain) ──
+    # 独立根类型。与意图域通过 Transformer 连接，而非继承。
+    # agent-state 不"是一种" requirement，但它"包含"一个 requirement
+    # 的运行时表示。这是组合 (Composition) 关系，不是继承。
+    Format(
+        id="agent-runtime",
+        name="AgentRuntime",
+        description="Agent 运行时语义域的根类型。"
+        "与意图域 (Requirement) 是独立的语义空间，"
+        "通过 Transformer 桥接。",
+    ),
     Format(
         id="agent-state",
         name="AgentRunState",
         description="Agent 的运行时状态。包含当前指令、历史、上下文。"
-        "是需求在 Agent 循环中的运行态表示。",
-        parent="requirement",
+        "是 requirement + 历史观察的组合 (Composition) 产物。",
+        parent="agent-runtime",
     ),
     Format(
         id="agent-action",
         name="AgentAction",
-        description="Agent 的单步决策输出。tool_call / think / finish / delegate。",
-        parent="requirement",
+        description="Agent 的单步决策输出。tool_call / think / finish / delegate。"
+        "是 LLM 对 agent-state 的转换 (Transformation) 产物。",
+        parent="agent-runtime",
     ),
     Format(
         id="tool-observation",
         name="ToolObservation",
-        description="工具执行后的观察结果。执行状态、输出内容。",
-        parent="requirement",
+        description="工具执行后的观察结果。执行状态、输出内容。"
+        "是工具对 agent-action 的转换 (Transformation) 产物。",
+        parent="agent-runtime",
     ),
 ]
 
